@@ -2,7 +2,7 @@ CC ?= cc
 CPPFLAGS += -I$(shell mkoctfile -p OCTINCLUDEDIR)
 CFLAGS ?= -Wall -Wextra -std=c99 -pedantic -O0 -g
 LDFLAGS ?=
-LIBS ?= -lsqlite3
+LIBS ?=
 
 OCT_MEX ?= mkoctfile --mex -lsqlite3
 OCTEXT ?= mex
