@@ -7,7 +7,7 @@
 
 #include "mex.h"
 
-#include "structlist.c"
+#include "structlist.h"
 
 #define TYPECHECK(ARRAY, ...) \
     do { \
