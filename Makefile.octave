@@ -1,0 +1,34 @@
+CC ?= cc
+CPPFLAGS += -I$(shell mkoctfile -p OCTINCLUDEDIR)
+CFLAGS ?= -Wall -Wextra -std=c99 -pedantic -O0 -g
+LDFLAGS ?=
+LIBS ?= -lsqlite3
+
+OCT_MEX ?= mkoctfile --mex -lsqlite3
+OCTEXT ?= mex
+
+TARGET := sqlite3
+
+MODULES := structlist
+MOREHEADERS :=
+OBJ := $(addsuffix .o,$(MODULES))
+HEADERS := $(addsuffix .h,$(MODULES)) $(MOREHEADERS)
+
+
+default : $(TARGET).$(OCTEXT)
+
+%.$(OCTEXT): %.c $(OBJ)
+	CPPFLAGS="$(CPPFLAGS)" \
+		CFLAGS="$(CFLAGS)" \
+		LDFLAGS="$(LDFLAGS) $(LIBS)" \
+		$(OCT_MEX) -o $@ $<
+
+%.o : %.c $(HEADERS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+
+clean :
+	@echo cleaning
+	rm -f $(TARGET).$(OCTEXT)
+
+.PRECIOUS: $(OBJ)
+.PHONY: clean
