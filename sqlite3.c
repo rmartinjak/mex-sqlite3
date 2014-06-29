@@ -13,8 +13,8 @@
     do { \
         mxClassID got = mxGetClassID(ARRAY); \
         mxClassID expect[] = { __VA_ARGS__ }; \
-        int ok = 0; \
-        for (int i = 0, n = sizeof expect / sizeof expect[0]; i < n; i++) { \
+        int i, n = sizeof expect / sizeof expect[0], ok = 0; \
+        for (i = 0; i < n; i++) { \
             if (got == expect[i]) { \
                 ok = 1; \
             } \
@@ -29,8 +29,8 @@ int bind_string(sqlite3_stmt *stmt, int index, const mxArray *array)
     TYPECHECK(array, mxCHAR_CLASS);
     char *s = mxArrayToString(array);
     int res = sqlite3_bind_text(stmt, index, s,
-                                -1,  // ALL the bytes
-                                SQLITE_TRANSIENT  // make a copy
+                                -1,  /* ALL the bytes */
+                                SQLITE_TRANSIENT  /* make a copy */
                                );
     mxFree(s);
     return res;
@@ -69,8 +69,8 @@ int bind_int64(sqlite3_stmt *stmt, int index, const mxArray *array)
 int bind_params(sqlite3_stmt* stmt, const mxArray *params, int column)
 {
     TYPECHECK(params, mxSTRUCT_CLASS);
-
-    for (int i = 0, n = mxGetNumberOfFields(params); i < n; i++) {
+    int i, n = mxGetNumberOfFields(params);
+    for (i = 0; i < n; i++) {
         mxArray *array = mxGetFieldByNumber(params, column, i);
         mxClassID cls = mxGetClassID(array);
         int res;
@@ -87,7 +87,7 @@ int bind_params(sqlite3_stmt* stmt, const mxArray *params, int column)
                 res = bind_double(stmt, i + 1, array);
                 break;
 
-            default:  // anything else is an integer
+            default:  /* anything else is an integer */
                 res = bind_int64(stmt, i + 1, array);
         }
         if (res != SQLITE_OK) {
@@ -99,7 +99,8 @@ int bind_params(sqlite3_stmt* stmt, const mxArray *params, int column)
 
 int execute_many(sqlite3_stmt *stmt, const mxArray *params)
 {
-    for (int i = 0, n = mxGetN(params); i < n; i++) {
+    int i, n = mxGetN(params);
+    for (i = 0; i < n; i++) {
         mexPrintf("binding params %d of %zu\n", i, mxGetM(params));
         if (bind_params(stmt, params, i) != SQLITE_OK) {
             mexErrMsgIdAndTxt("sqlite3:bind",
@@ -135,9 +136,9 @@ mxArray *get_column(sqlite3_stmt *stmt, int index)
 
 int fetch_row(sqlite3_stmt *stmt, int num_columns, mxArray **array)
 {
-    int res = sqlite3_step(stmt);
+    int i, res = sqlite3_step(stmt);
     if (res == SQLITE_ROW) {
-        for (int i = 0; i < num_columns; i++) {
+        for (i = 0; i < num_columns; i++) {
             mxSetFieldByNumber(*array, 0, i, get_column(stmt, i));
         }
     }
@@ -148,9 +149,9 @@ int fetch_results(sqlite3_stmt *stmt, mxArray **results)
 {
     struct structlist result_list;
     structlist_init(&result_list);
-    int num_columns = sqlite3_column_count(stmt);
+    int i, num_columns = sqlite3_column_count(stmt);
     mxArray *row = mxCreateStructMatrix(1, 1, 0, NULL);
-    for (int i = 0; i < num_columns; i++) {
+    for (i = 0; i < num_columns; i++) {
         const char *name = sqlite3_column_name(stmt, i);
         mxAddField(row, name);
     }
@@ -197,11 +198,11 @@ mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     int num_columns = sqlite3_column_count(stmt);
 
     if (num_columns > 0) {
-        // Looks like a SELECT query
+        /* Looks like a SELECT query */
         res = fetch_results(stmt, &plhs[0]);
     } else {
-        // If the user passes a struct array, use this to execute the
-        // statement for each column
+        /* If the user passes a struct array, use this to execute the statement
+         * for each column */
         if (nrhs > 2) {
             res = execute_many(stmt, prhs[RHS_PARAMS]);
         } else {
@@ -210,7 +211,7 @@ mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     }
 
     if (res == SQLITE_DONE) {
-        // success!
+        /* success! */
     } else {
         mexErrMsgIdAndTxt("sqlite3:step",
                           "proper error handling is hard, eh?");

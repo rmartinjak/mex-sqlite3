@@ -61,21 +61,25 @@ mxArray *structlist_collapse(struct structlist *l)
     if (!l->size) {
         return a;
     }
-    for (int i = 0; i < mxGetNumberOfFields(l->head->array); i++) {
-        const char *n = mxGetFieldNameByNumber(l->head->array, i);
-        mxAddField(a, n);
+    int i, n = mxGetNumberOfFields(l->head->array);
+    for (i = 0; i < n; i++) {
+        const char *name = mxGetFieldNameByNumber(l->head->array, i);
+        mxAddField(a, name);
     }
 
     mwIndex index = 0;
-    for (struct node *n = l->head; n; n = n->next) {
-        for (size_t i = 0; i < mxGetN(n->array); i++) {
-            for (int field = 0; field < l->num_fields; field++) {
-                mxArray *val = mxGetFieldByNumber(n->array, i, field);
+    struct node *node;
+    for (node = l->head; node; node = node->next) {
+        n = mxGetN(node->array);
+        for (i = 0; i < n; i++) {
+            int field;
+            for (field = 0; field < l->num_fields; field++) {
+                mxArray *val = mxGetFieldByNumber(node->array, i, field);
                 mxSetFieldByNumber(a, index, field, mxDuplicateArray(val));
             }
             index++;
         }
-        mxDestroyArray(n->array);
+        mxDestroyArray(node->array);
     }
     structlist_free(l);
     return a;
