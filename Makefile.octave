@@ -21,7 +21,7 @@ default : $(TARGET).$(OCTEXT)
 	CPPFLAGS="$(CPPFLAGS)" \
 		CFLAGS="$(CFLAGS)" \
 		LDFLAGS="$(LDFLAGS) $(LIBS)" \
-		$(OCT_MEX) -o $@ $<
+		$(OCT_MEX) -o $@ $^
 
 %.o : %.c $(HEADERS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
